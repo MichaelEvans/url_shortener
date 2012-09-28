@@ -13,6 +13,13 @@ helpers do
   def shorten(url)
       Base64.urlsafe_encode64([Digest::MD5.hexdigest(url).to_i(16)].pack("N")).sub(/==\n?$/, '')
   end
+  
+  def smart_add_url_protocol
+    unless self.url[/^http?:\/\//]
+      self.url = 'http://' + self.url
+    end
+  end
+  
 end
 
 get '/' do
@@ -20,14 +27,18 @@ get '/' do
 end
 
 post '/' do
-  if params[:url] and not params[:url].empty?
-    @shortcode = shorten params[:url]
-    redis.setnx "links:#{@shortcode}", params[:url]
-  end
-  erb :index
+    @hostname = request.env["HTTP_REFERER"]
+    if params[:url] and not params[:url].empty?
+        @shortcode = shorten params[:url]
+        redis.setnx "links:#{@shortcode}", params[:url]
+    end
+    erb :index
 end
 
 get '/:shortcode' do
   @url = redis.get "links:#{params[:shortcode]}"
+  if !@url.match(/^http:\/\//)
+      @url = "http://#{@url}"
+  end
   redirect @url || '/'
 end

@@ -76,7 +76,9 @@
 		<% if @shortcode %>
 		<div class="result">
 			Your shortened URL is:
-			<a href="http://my-shortlink-app.com/<%= @shortcode %>">http://my-shortlink-app.com/<%= @shortcode %></a>
+			<a href="<%= "#{@hostname}#{@shortcode}" %>">
+				<%= "#{@hostname}#{@shortcode}" %>
+			</a>
 		</div>
 		<% end %>
 	</div>
